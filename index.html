@@ -142,7 +142,6 @@
       display: block;
       border-radius: 6px;
     }
-    /* 雙紅點標記 */
     .red-dot-pin {
       position: absolute;
       width: 22px;
@@ -185,11 +184,12 @@
 
   <div class="header">
     <h1>🛵 B1F 機車臨時停車位導引系統</h1>
-    <p>請選擇區域並輸入車號數字（1~7）</p>
+    <p>請選擇左側區域，並輸入右側車號數字</p>
   </div>
 
   <div class="search-container">
     <div class="search-form">
+      <!-- 左側下拉式 -->
       <select id="zoneSelect" class="zone-select" onchange="onZoneChange()">
         <option value="R1">R1 區</option>
         <option value="R2">R2 區</option>
@@ -198,7 +198,10 @@
         <option value="G1">G1 區</option>
         <option value="G2">G2 區</option>
       </select>
+
+      <!-- 右側數字輸入 -->
       <input type="number" id="spotNumber" class="search-input" min="1" max="7" placeholder="號碼 (1-7)" onkeypress="handleKeyPress(event)">
+      
       <button onclick="searchSpot()" class="search-btn">搜尋位置</button>
     </div>
   </div>
@@ -209,8 +212,8 @@
 
   <div class="map-container">
     <div class="map-wrapper">
-      <!-- 預設首頁載入 map-b1.png -->
-      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區地圖">
+      <!-- 預設首頁圖片：map-b1.png -->
+      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區圖">
       <div id="redDotLeft" class="red-dot-pin"></div>
       <div id="redDotRight" class="red-dot-pin"></div>
     </div>
@@ -247,20 +250,10 @@
 
     function onZoneChange() {
       const selectedZone = document.getElementById('zoneSelect').value;
-      const mapImg = document.getElementById('mapImg');
-      const dotL = document.getElementById('redDotLeft');
-      const dotR = document.getElementById('redDotRight');
-      
-      mapImg.src = areaInfo[selectedZone].img;
-      dotL.style.display = 'none';
-      dotR.style.display = 'none';
-
       const spotInput = document.getElementById('spotNumber');
+      
       spotInput.max = areaInfo[selectedZone].max;
       spotInput.placeholder = `號碼 (1-${areaInfo[selectedZone].max})`;
-
-      const resultCard = document.getElementById('resultCard');
-      resultCard.innerHTML = `📍 已切換至 <b>${areaInfo[selectedZone].name}</b>，請輸入號碼並點擊搜尋`;
     }
 
     function handleKeyPress(e) {
@@ -276,7 +269,7 @@
       const dotR = document.getElementById('redDotRight');
 
       if (!numInput) {
-        resultCard.innerHTML = '⚠️ 請輸入車位號碼數字！';
+        resultCard.innerHTML = '⚠️ 請在右側輸入車位號碼數字！';
         dotL.style.display = 'none';
         dotR.style.display = 'none';
         return;
@@ -288,7 +281,7 @@
       if (isNaN(num) || num < 1 || num > area.max) {
         resultCard.innerHTML = `
           <div style="color: #d9381e; font-weight: bold;">❌ 數字超出範圍</div>
-          <div class="spot-guide">${zoneKey} 區車位號碼僅限 1 到 ${area.max}！</div>
+          <div class="spot-guide">${zoneKey} 區號碼範圍為 1 到 ${area.max}！</div>
         `;
         dotL.style.display = 'none';
         dotR.style.display = 'none';
