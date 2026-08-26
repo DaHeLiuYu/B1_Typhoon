@@ -36,7 +36,7 @@
       color: #666;
     }
     
-    /* 1. 地圖容器：寬度 550px 置頂 */
+    /* 地圖容器 */
     .map-container {
       width: 100%;
       max-width: 550px;
@@ -58,7 +58,7 @@
       border-radius: 6px;
     }
 
-    /* 2. 搜尋與結果卡片：寬度 550px 置底 */
+    /* 搜尋與結果卡片 */
     .search-container {
       width: 100%;
       max-width: 550px;
@@ -193,7 +193,6 @@
     <p>請選擇左側區域，並輸入右側個位數車號</p>
   </div>
 
-  <!-- 地圖區（置頂） -->
   <div class="map-container">
     <div class="map-wrapper">
       <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區圖">
@@ -202,7 +201,6 @@
     </div>
   </div>
 
-  <!-- 搜尋與結果卡片（置底） -->
   <div class="search-container">
     <div class="search-form">
       <select id="zoneSelect" class="zone-select" onchange="onZoneChange()">
@@ -214,7 +212,6 @@
         <option value="G2">G2 區</option>
       </select>
 
-      <!-- 限制單一數字 -->
       <input type="text" id="spotNumber" class="search-input" maxlength="1" inputmode="numeric" placeholder="號碼 (1-7)" oninput="validateSingleDigit(this)" onkeypress="handleKeyPress(event)">
       
       <button onclick="searchSpot()" class="search-btn">搜尋位置</button>
@@ -235,25 +232,25 @@
       'G2': { name: 'G2 區 (綠色區域)', img: 'map-g2.png', guide: '位於 B 棟裝卸車位區域', max: 6 }
     };
 
-    /* 重新校正的 R 區座標 (靠中央空隙，Y 軸精準下移) */
+    /* 1. 微調後 R 區專屬座標 (R1~R4 共 7 格) */
     const posR = {
-      1: { y: 15.0, leftX: 42.0, rightX: 58.0 },
-      2: { y: 28.0, leftX: 42.0, rightX: 58.0 },
-      3: { y: 41.0, leftX: 42.0, rightX: 58.0 },
-      4: { y: 54.0, leftX: 42.0, rightX: 58.0 },
-      5: { y: 67.0, leftX: 42.0, rightX: 58.0 },
-      6: { y: 80.0, leftX: 42.0, rightX: 58.0 },
-      7: { y: 92.5, leftX: 42.0, rightX: 58.0 }
+      1: { y: 19.5, leftX: 43.0, rightX: 57.0 },
+      2: { y: 30.5, leftX: 43.0, rightX: 57.0 },
+      3: { y: 41.8, leftX: 43.0, rightX: 57.0 },
+      4: { y: 53.0, leftX: 43.0, rightX: 57.0 },
+      5: { y: 64.2, leftX: 43.0, rightX: 57.0 },
+      6: { y: 75.5, leftX: 43.0, rightX: 57.0 },
+      7: { y: 86.8, leftX: 43.0, rightX: 57.0 }
     };
 
-    /* 重新校正的 G 區座標 */
+    /* 2. G 區專屬座標 (預設值，待您測完 R 區後再一起對齊調整) */
     const posG = {
-      1: { y: 83.0, leftX: 42.0, rightX: 58.0 },
-      2: { y: 70.0, leftX: 42.0, rightX: 58.0 },
-      3: { y: 57.0, leftX: 42.0, rightX: 58.0 },
-      4: { y: 44.0, leftX: 42.0, rightX: 58.0 },
-      5: { y: 31.0, leftX: 42.0, rightX: 58.0 },
-      6: { y: 18.0, leftX: 42.0, rightX: 58.0 }
+      1: { y: 72.0, leftX: 42.0, rightX: 58.0 },
+      2: { y: 61.5, leftX: 42.0, rightX: 58.0 },
+      3: { y: 51.0, leftX: 42.0, rightX: 58.0 },
+      4: { y: 40.5, leftX: 42.0, rightX: 58.0 },
+      5: { y: 30.0, leftX: 42.0, rightX: 58.0 },
+      6: { y: 14.5, leftX: 42.0, rightX: 58.0 }
     };
 
     function validateSingleDigit(input) {
@@ -305,6 +302,7 @@
       const numFormatted = num < 10 ? `0${num}` : `${num}`;
       const spotName = `${zoneKey}-${numFormatted}`;
 
+      // 判斷 R 區或 G 區選擇不同座標變數
       const posData = zoneKey.startsWith('R') ? posR[num] : posG[num];
 
       dotL.style.top = posData.y + '%';
