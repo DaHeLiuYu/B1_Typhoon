@@ -36,7 +36,7 @@
       color: #666;
     }
     
-    /* 1. 地圖容器：寬度加大至 550px，且置頂（對調位置） */
+    /* 1. 地圖容器：寬度 550px 置頂 */
     .map-container {
       width: 100%;
       max-width: 550px;
@@ -58,7 +58,7 @@
       border-radius: 6px;
     }
 
-    /* 2. 搜尋與結果卡片：寬度同步 550px，移至下方 */
+    /* 2. 搜尋與結果卡片：寬度 550px 置底 */
     .search-container {
       width: 100%;
       max-width: 550px;
@@ -147,22 +147,22 @@
       margin-top: 4px;
     }
 
-    /* 雙紅點標記 */
-    .red-dot-pin {
+    /* 雙藍點標記（亮藍色 #0066ff） */
+    .blue-dot-pin {
       position: absolute;
       width: 22px;
       height: 22px;
-      background-color: #ff0033;
+      background-color: #0066ff;
       border: 2px solid #ffffff;
       border-radius: 50%;
       display: none;
-      box-shadow: 0 0 10px rgba(255, 0, 51, 0.9);
+      box-shadow: 0 0 12px rgba(0, 102, 255, 0.9);
       transform: translate(-50%, -50%);
       z-index: 10;
       animation: pulse-dot 1.2s infinite alternate;
       pointer-events: none;
     }
-    .red-dot-pin::after {
+    .blue-dot-pin::after {
       content: '';
       position: absolute;
       top: 50%;
@@ -174,8 +174,8 @@
       transform: translate(-50%, -50%);
     }
     @keyframes pulse-dot {
-      0% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 6px rgba(255, 0, 51, 0.8); }
-      100% { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 16px rgba(255, 0, 51, 1); }
+      0% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 6px rgba(0, 102, 255, 0.8); }
+      100% { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 16px rgba(0, 102, 255, 1); }
     }
     @media (max-width: 480px) {
       body { padding: 10px; }
@@ -193,16 +193,16 @@
     <p>請選擇左側區域，並輸入右側個位數車號</p>
   </div>
 
-  <!-- 【藍框區域】原地圖區域，移至上方 -->
+  <!-- 地圖區（置頂） -->
   <div class="map-container">
     <div class="map-wrapper">
       <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區圖">
-      <div id="redDotLeft" class="red-dot-pin"></div>
-      <div id="redDotRight" class="red-dot-pin"></div>
+      <div id="blueDotLeft" class="blue-dot-pin"></div>
+      <div id="blueDotRight" class="blue-dot-pin"></div>
     </div>
   </div>
 
-  <!-- 【紅框區域】原搜尋與結果卡片，移至下方 -->
+  <!-- 搜尋與結果卡片（置底） -->
   <div class="search-container">
     <div class="search-form">
       <select id="zoneSelect" class="zone-select" onchange="onZoneChange()">
@@ -214,7 +214,7 @@
         <option value="G2">G2 區</option>
       </select>
 
-      <!-- 限制只能輸入個位數 1 位數 (maxlength="1") -->
+      <!-- 限制單一數字 -->
       <input type="text" id="spotNumber" class="search-input" maxlength="1" inputmode="numeric" placeholder="號碼 (1-7)" oninput="validateSingleDigit(this)" onkeypress="handleKeyPress(event)">
       
       <button onclick="searchSpot()" class="search-btn">搜尋位置</button>
@@ -235,26 +235,27 @@
       'G2': { name: 'G2 區 (綠色區域)', img: 'map-g2.png', guide: '位於 B 棟裝卸車位區域', max: 6 }
     };
 
+    /* 重新校正的 R 區座標 (靠中央空隙，Y 軸精準下移) */
     const posR = {
-      1: { y: 28.0, leftX: 16.0, rightX: 84.0 },
-      2: { y: 38.3, leftX: 16.0, rightX: 84.0 },
-      3: { y: 48.7, leftX: 16.0, rightX: 84.0 },
-      4: { y: 59.0, leftX: 16.0, rightX: 84.0 },
-      5: { y: 69.3, leftX: 16.0, rightX: 84.0 },
-      6: { y: 79.7, leftX: 16.0, rightX: 84.0 },
-      7: { y: 91.7, leftX: 16.0, rightX: 84.0 }
+      1: { y: 15.0, leftX: 42.0, rightX: 58.0 },
+      2: { y: 28.0, leftX: 42.0, rightX: 58.0 },
+      3: { y: 41.0, leftX: 42.0, rightX: 58.0 },
+      4: { y: 54.0, leftX: 42.0, rightX: 58.0 },
+      5: { y: 67.0, leftX: 42.0, rightX: 58.0 },
+      6: { y: 80.0, leftX: 42.0, rightX: 58.0 },
+      7: { y: 92.5, leftX: 42.0, rightX: 58.0 }
     };
 
+    /* 重新校正的 G 區座標 */
     const posG = {
-      1: { y: 71.0, leftX: 16.0, rightX: 84.0 },
-      2: { y: 60.0, leftX: 16.0, rightX: 84.0 },
-      3: { y: 49.0, leftX: 16.0, rightX: 84.0 },
-      4: { y: 38.0, leftX: 16.0, rightX: 84.0 },
-      5: { y: 27.0, leftX: 16.0, rightX: 84.0 },
-      6: { y: 15.0, leftX: 16.0, rightX: 84.0 }
+      1: { y: 83.0, leftX: 42.0, rightX: 58.0 },
+      2: { y: 70.0, leftX: 42.0, rightX: 58.0 },
+      3: { y: 57.0, leftX: 42.0, rightX: 58.0 },
+      4: { y: 44.0, leftX: 42.0, rightX: 58.0 },
+      5: { y: 31.0, leftX: 42.0, rightX: 58.0 },
+      6: { y: 18.0, leftX: 42.0, rightX: 58.0 }
     };
 
-    /* 強制僅能輸入單一個數字 */
     function validateSingleDigit(input) {
       input.value = input.value.replace(/[^0-9]/g, '');
       if (input.value.length > 1) {
@@ -277,8 +278,8 @@
       const numInput = document.getElementById('spotNumber').value.trim();
       const resultCard = document.getElementById('resultCard');
       const mapImg = document.getElementById('mapImg');
-      const dotL = document.getElementById('redDotLeft');
-      const dotR = document.getElementById('redDotRight');
+      const dotL = document.getElementById('blueDotLeft');
+      const dotR = document.getElementById('blueDotRight');
 
       if (!numInput) {
         resultCard.innerHTML = '⚠️ 請輸入車位個位數字！';
