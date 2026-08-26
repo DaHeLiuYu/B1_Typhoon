@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>B1F 機車臨時停車位導引系統</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .header h1 {
+      font-size: 1.4rem;
+      color: #1a2a3a;
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .search-container {
+      width: 100%;
+      max-width: 600px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .search-form {
+      display: flex;
+      gap: 10px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 1.05rem;
+      border: 2px solid #e1e4e8;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: #0066cc;
+    }
+    .search-btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+      background-color: #0066cc;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      white-space: nowrap;
+    }
+    .search-btn:hover {
+      background-color: #0052a3;
+    }
+    .result-card {
+      width: 100%;
+      max-width: 600px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+      text-align: center;
+      font-size: 0.95rem;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-left: 5px solid #0066cc;
+    }
+    .result-card .spot-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #d9381e;
+      margin-bottom: 4px;
+    }
+    .result-card .spot-area {
+      font-weight: bold;
+      color: #1a2a3a;
+    }
+    .result-card .spot-guide {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 2px;
+    }
+    .map-container {
+      width: 100%;
+      max-width: 600px;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      position: relative;
+      padding: 10px;
+    }
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .map-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+    }
+    .pin-box {
+      position: absolute;
+      border: 3px solid #ff0033;
+      background-color: rgba(255, 0, 51, 0.4);
+      border-radius: 4px;
+      display: none;
+      box-shadow: 0 0 12px #ff0033;
+      animation: pulse 1.2s infinite alternate;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.7; }
+      100% { transform: scale(1.15); opacity: 1; opacity: 1; }
+    }
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .header h1 { font-size: 1.2rem; }
+      .search-form { flex-direction: row; }
+      .search-input { font-size: 0.95rem; padding: 10px 12px; }
+      .search-btn { padding: 10px 16px; font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🛵 B1F 機車臨時停車位導引系統</h1>
+    <p>輸入車位號碼（如 R101、R1-01、G1_01），快速定位位置</p>
+  </div>
+
+  <div class="search-container">
+    <div class="search-form">
+      <input type="text" id="spotInput" class="search-input" placeholder="請輸入車位 (例如 R101 或 R1-01)" onkeypress="handleKeyPress(event)">
+      <button onclick="searchSpot()" class="search-btn">搜尋車位</button>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    請輸入管理員告知的號碼（例如：R101, R1-01, G1_01）
+  </div>
+
+  <div class="map-container">
+    <div class="map-wrapper">
+      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1F平面圖">
+      <div id="pinBox" class="pin-box"></div>
+    </div>
+  </div>
+
+  <script>
+    // 所有車位對照表
+    // 格式: top%, left%, width%, height%
+    const spotData = {
+      // R1 區
+      'R1-01': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [14, 3, 13, 8] },
+      'R1-02': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [25, 3, 13, 8] },
+      'R1-03': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [37, 3, 13, 8] },
+      'R1-04': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [48, 3, 13, 8] },
+      'R1-05': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [60, 3, 13, 8] },
+      'R1-06': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [71, 3, 13, 8] },
+      'R1-07': { area: 'R1 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟電梯廳斜對面', pos: [85, 3, 13, 8] },
+
+      // R2 區
+      'R2-01': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [14, 19, 13, 8] },
+      'R2-02': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [25, 19, 13, 8] },
+      'R2-03': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [37, 19, 13, 8] },
+      'R2-04': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [48, 19, 13, 8] },
+      'R2-05': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [60, 19, 13, 8] },
+      'R2-06': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [71, 19, 13, 8] },
+      'R2-07': { area: 'R2 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間正對面', pos: [85, 19, 13, 8] },
+
+      // R3 區
+      'R3-01': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [14, 35, 13, 8] },
+      'R3-02': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [25, 35, 13, 8] },
+      'R3-03': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [37, 35, 13, 8] },
+      'R3-04': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [48, 35, 13, 8] },
+      'R3-05': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [60, 35, 13, 8] },
+      'R3-06': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [71, 35, 13, 8] },
+      'R3-07': { area: 'R3 區 (粉紅區域)', img: 'map-spots.png', guide: '位於 A 棟垃圾資源回收空間前', pos: [85, 35, 13, 8] },
+
+      // R4 區
+      'R4-01': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [14, 51, 13, 8] },
+      'R4-02': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [25, 51, 13, 8] },
+      'R4-03': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [37, 51, 13, 8] },
+      'R4-04': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [48, 51, 13, 8] },
+      'R4-05': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [60, 51, 13, 8] },
+      'R4-06': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [71, 51, 13, 8] },
+      'R4-07': { area: 'R4 區 (粉紅區域)', img: 'map-spots.png', guide: '位於靠左側車位', pos: [85, 51, 13, 8] },
+
+      // G2 區
+      'G2-01': { area: 'G-2 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟裝卸車位/回收空間左側', pos: [85, 68, 12, 8] },
+      'G2-02': { area: 'G-2 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟裝卸車位/回收空間左側', pos: [71, 68, 12, 8] },
+      'G2-03': { area: 'G-2 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟裝卸車位/回收空間左側', pos: [60, 68, 12, 8] },
+      'G2-04': { area: 'G-2 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟裝卸車位/回收空間左側', pos: [48, 68, 12, 8] },
+      'G2-05': { area: 'G-2 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟裝卸車位/回收空間左側', pos: [37, 68, 12, 8] },
+      'G2-06': { area: 'G-2 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟裝卸車位/回收空間左側', pos: [14, 68, 12, 8] },
+
+      // G1 區
+      'G1-01': { area: 'G-1 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟垃圾資源回收空間前', pos: [85, 85, 12, 8] },
+      'G1-02': { area: 'G-1 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟垃圾資源回收空間前', pos: [71, 85, 12, 8] },
+      'G1-03': { area: 'G-1 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 栋垃圾資源回收空間前', pos: [60, 85, 12, 8] },
+      'G1-04': { area: 'G-1 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟垃圾資源回收空間前', pos: [48, 85, 12, 8] },
+      'G1-05': { area: 'G-1 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟垃圾資源回收空間前', pos: [37, 85, 12, 8] },
+      'G1-06': { area: 'G-1 區 (綠色區域)', img: 'map-spots.png', guide: '位於 B 棟垃圾資源回收空間前', pos: [14, 85, 12, 8] }
+    };
+
+    // 輸入格式自動正規化轉換器
+    function normalizeInput(str) {
+      // 轉大寫並去除空白與特殊符號
+      let cleaned = str.toUpperCase().trim().replace(/[_\s\-\.]/g, '');
+
+      // 情況 A: 打 R101 / R11 -> R1-01
+      // 情況 B: 打 R1-01 / R1_01 -> R1-01
+      let match = cleaned.match(/^([RG])([1-4])(\d{1,2})$/);
+      if (match) {
+        let type = match[1];
+        let zone = match[2];
+        let num = parseInt(match[3], 10);
+        let numStr = num < 10 ? '0' + num : '' + num;
+        return `${type}${zone}-${numStr}`;
+      }
+      return cleaned;
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') {
+        searchSpot();
+      }
+    }
+
+    function searchSpot() {
+      const rawInput = document.getElementById('spotInput').value;
+      const resultCard = document.getElementById('resultCard');
+      const mapImg = document.getElementById('mapImg');
+      const pinBox = document.getElementById('pinBox');
+
+      if (!rawInput.trim()) {
+        resultCard.innerHTML = '⚠️ 請先輸入車位號碼！';
+        pinBox.style.display = 'none';
+        mapImg.src = 'map-b1.png';
+        return;
+      }
+
+      const formattedKey = normalizeInput(rawInput);
+      const spot = spotData[formattedKey];
+
+      if (spot) {
+        mapImg.src = spot.img;
+        pinBox.style.top = spot.pos[0] + '%';
+        pinBox.style.left = spot.pos[1] + '%';
+        pinBox.style.width = spot.pos[2] + '%';
+        pinBox.style.height = spot.pos[3] + '%';
+        pinBox.style.display = 'block';
+
+        resultCard.innerHTML = `
+          <div class="spot-title">車號：${formattedKey}</div>
+          <div class="spot-area">區域：${spot.area}</div>
+          <div class="spot-guide">${spot.guide}</div>
+        `;
+      } else {
+        // 如果輸入簡略區域（如 R1、G1）
+        let upperRaw = rawInput.toUpperCase().replace(/[\_\-\s]/g, '');
+        if (['R1', 'R2', 'R3', 'R4', 'G1', 'G2'].includes(upperRaw)) {
+          mapImg.src = 'map-b1.png';
+          pinBox.style.display = 'none';
+          resultCard.innerHTML = `
+            <div class="spot-area">📍 已找到 ${upperRaw} 區域</div>
+            <div class="spot-guide">請輸入完整車位號碼（如：${upperRaw}01 或 ${upperRaw}-01）</div>
+          `;
+        } else {
+          pinBox.style.display = 'none';
+          mapImg.src = 'map-b1.png';
+          resultCard.innerHTML = `
+            <div style="color: #d9381e; font-weight: bold;">❌ 查無號碼「${rawInput}」</div>
+            <div class="spot-guide">請確認格式，例如：R101、R1-01、R1_01 或 G101</div>
+          `;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
