@@ -20,6 +20,8 @@
       min-height: 100vh;
       padding: 16px;
     }
+
+    /* 1. 上方：標題與說明 (原黃色區域) */
     .header {
       text-align: center;
       margin-bottom: 16px;
@@ -35,30 +37,8 @@
       font-size: 0.85rem;
       color: #666;
     }
-    
-    /* 地圖容器 */
-    .map-container {
-      width: 100%;
-      max-width: 550px;
-      background: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-    .map-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    .map-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 6px;
-    }
 
-    /* 搜尋與結果卡片 */
+    /* 2. 中間：搜尋輸入區 (原綠色區域) */
     .search-container {
       width: 100%;
       max-width: 550px;
@@ -114,40 +94,29 @@
     .search-btn:hover {
       background-color: #0052a3;
     }
-    .result-card {
+
+    /* 3. 下方：地圖容器 (接續 map-b1.png 平面圖) */
+    .map-container {
       width: 100%;
       max-width: 550px;
       background: #ffffff;
       border-radius: 12px;
-      padding: 14px 16px;
+      overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      text-align: center;
-      font-size: 0.95rem;
-      min-height: 60px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border-left: 5px solid #0066cc;
+      padding: 12px;
     }
-    .result-card .spot-title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: #d9381e;
-      margin-bottom: 4px;
+    .map-wrapper {
+      position: relative;
+      width: 100%;
     }
-    .result-card .spot-area {
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: #1a2a3a;
-    }
-    .result-card .spot-guide {
-      font-size: 0.88rem;
-      color: #666;
-      margin-top: 4px;
+    .map-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
     }
 
-    /* 雙藍點標記（亮藍色 #0066ff） */
+    /* 雙藍點標記 */
     .blue-dot-pin {
       position: absolute;
       width: 22px;
@@ -177,6 +146,7 @@
       0% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 6px rgba(0, 102, 255, 0.8); }
       100% { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 16px rgba(0, 102, 255, 1); }
     }
+
     @media (max-width: 480px) {
       body { padding: 10px; }
       .header h1 { font-size: 1.2rem; }
@@ -188,19 +158,13 @@
 </head>
 <body>
 
+  <!-- 最上方：標題與說明 -->
   <div class="header">
     <h1>🛵 B1F 機車臨時停車位導引系統</h1>
-    <p>請選擇左側區域，並輸入右側個位數車號</p>
+    <p>請選擇區域並輸入車號個位數</p>
   </div>
 
-  <div class="map-container">
-    <div class="map-wrapper">
-      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區圖">
-      <div id="blueDotLeft" class="blue-dot-pin"></div>
-      <div id="blueDotRight" class="blue-dot-pin"></div>
-    </div>
-  </div>
-
+  <!-- 中間：搜尋輸入區 -->
   <div class="search-container">
     <div class="search-form">
       <select id="zoneSelect" class="zone-select" onchange="onZoneChange()">
@@ -218,32 +182,37 @@
     </div>
   </div>
 
-  <div class="result-card" id="resultCard">
-    請選擇區域並輸入車位號碼（R 區為 1~7，G 區為 1~6）
+  <!-- 下方：地下室停車場平面圖 -->
+  <div class="map-container">
+    <div class="map-wrapper">
+      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區平面圖">
+      <div id="blueDotLeft" class="blue-dot-pin"></div>
+      <div id="blueDotRight" class="blue-dot-pin"></div>
+    </div>
   </div>
 
   <script>
     const areaInfo = {
-      'R1': { name: 'R1 區 (粉紅區域)', img: 'map-r1.png', guide: '位於 A 棟電梯廳斜對面', max: 7 },
-      'R2': { name: 'R2 區 (粉紅區域)', img: 'map-r2.png', guide: '位於 A 棟垃圾資源回收空間正對面', max: 7 },
-      'R3': { name: 'R3 區 (粉紅區域)', img: 'map-r3.png', guide: '位於 A 棟垃圾資源回收空間前', max: 7 },
-      'R4': { name: 'R4 區 (粉紅區域)', img: 'map-r4.png', guide: '位於車道靠左側區域', max: 7 },
-      'G1': { name: 'G1 區 (綠色區域)', img: 'map-g1.png', guide: '位於 B 棟垃圾車暫停車位區域', max: 6 },
-      'G2': { name: 'G2 區 (綠色區域)', img: 'map-g2.png', guide: '位於 B 棟裝卸車位區域', max: 6 }
+      'R1': { img: 'map-r1.png', max: 7 },
+      'R2': { img: 'map-r2.png', max: 7 },
+      'R3': { img: 'map-r3.png', max: 7 },
+      'R4': { img: 'map-r4.png', max: 7 },
+      'G1': { img: 'map-g1.png', max: 6 },
+      'G2': { img: 'map-g2.png', max: 6 }
     };
 
-    /* 1. 微調後 R 區專屬座標 (R1~R4 共 7 格) */
+    /* R 區精準座標 (以 12.0 等距跨度推算) */
     const posR = {
-  1: { y: 19.0, leftX: 43.0, rightX: 57.0 }, // 41.0 - (12.0 * 2)
-  2: { y: 29.0, leftX: 43.0, rightX: 57.0 }, // 41.0 - 12.0
-  3: { y: 41.0, leftX: 43.0, rightX: 57.0 }, // 實測基準點
-  4: { y: 53.0, leftX: 43.0, rightX: 57.0 }, // 實測基準點
-  5: { y: 65.0, leftX: 43.0, rightX: 57.0 }, // 53.0 + 12.0
-  6: { y: 77.0, leftX: 43.0, rightX: 57.0 }, // 53.0 + (12.0 * 2)
-  7: { y: 89.0, leftX: 43.0, rightX: 57.0 }  // 53.0 + (12.0 * 3)
+      1: { y: 17.0, leftX: 43.0, rightX: 57.0 },
+      2: { y: 29.0, leftX: 43.0, rightX: 57.0 },
+      3: { y: 41.0, leftX: 43.0, rightX: 57.0 },
+      4: { y: 53.0, leftX: 43.0, rightX: 57.0 },
+      5: { y: 65.0, leftX: 43.0, rightX: 57.0 },
+      6: { y: 77.0, leftX: 43.0, rightX: 57.0 },
+      7: { y: 89.0, leftX: 43.0, rightX: 57.0 }
     };
 
-    /* 2. G 區專屬座標 (預設值，待您測完 R 區後再一起對齊調整) */
+    /* G 區專屬座標 (預設值) */
     const posG = {
       1: { y: 72.0, leftX: 42.0, rightX: 58.0 },
       2: { y: 61.5, leftX: 42.0, rightX: 58.0 },
@@ -273,13 +242,12 @@
     function searchSpot() {
       const zoneKey = document.getElementById('zoneSelect').value;
       const numInput = document.getElementById('spotNumber').value.trim();
-      const resultCard = document.getElementById('resultCard');
       const mapImg = document.getElementById('mapImg');
       const dotL = document.getElementById('blueDotLeft');
       const dotR = document.getElementById('blueDotRight');
 
       if (!numInput) {
-        resultCard.innerHTML = '⚠️ 請輸入車位個位數字！';
+        alert('請輸入車位號碼！');
         dotL.style.display = 'none';
         dotR.style.display = 'none';
         return;
@@ -289,20 +257,16 @@
       const area = areaInfo[zoneKey];
 
       if (isNaN(num) || num < 1 || num > area.max) {
-        resultCard.innerHTML = `
-          <div style="color: #d9381e; font-weight: bold;">❌ 數字超出範圍</div>
-          <div class="spot-guide">${zoneKey} 區號碼範圍為 1 到 ${area.max}！</div>
-        `;
+        alert(`${zoneKey} 區號碼範圍為 1 到 ${area.max}！`);
         dotL.style.display = 'none';
         dotR.style.display = 'none';
         return;
       }
 
+      // 切換區域圖片
       mapImg.src = area.img;
-      const numFormatted = num < 10 ? `0${num}` : `${num}`;
-      const spotName = `${zoneKey}-${numFormatted}`;
 
-      // 判斷 R 區或 G 區選擇不同座標變數
+      // 取得座標並顯示藍點
       const posData = zoneKey.startsWith('R') ? posR[num] : posG[num];
 
       dotL.style.top = posData.y + '%';
@@ -312,12 +276,6 @@
       dotR.style.top = posData.y + '%';
       dotR.style.left = posData.rightX + '%';
       dotR.style.display = 'block';
-
-      resultCard.innerHTML = `
-        <div class="spot-title">🎯 車號：${spotName}</div>
-        <div class="spot-area">區域：${area.name}</div>
-        <div class="spot-guide">${area.guide}</div>
-      `;
     }
   </script>
 </body>
