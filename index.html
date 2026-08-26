@@ -21,12 +21,20 @@
       padding: 16px;
     }
 
-    /* 1. 最上方：標題與說明 */
+    /* 預設隱藏搜尋後的區塊 */
+    .search-result-view {
+      display: none;
+      width: 100%;
+      max-width: 550px;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 黃色框：標題與說明 */
     .header {
       text-align: center;
       margin-bottom: 16px;
       width: 100%;
-      max-width: 550px;
     }
     .header h1 {
       font-size: 1.35rem;
@@ -38,10 +46,9 @@
       color: #666;
     }
     
-    /* 2. 中間：車位區域圖 (顯示單區 png 與藍點) */
+    /* 綠色框：單區車位放大圖 (顯示 png 與藍點) */
     .map-container {
       width: 100%;
-      max-width: 550px;
       background: #ffffff;
       border-radius: 12px;
       overflow: hidden;
@@ -60,7 +67,7 @@
       border-radius: 6px;
     }
 
-    /* 3. 搜尋與結果卡片區 */
+    /* 藍色框：搜尋區塊 */
     .search-container {
       width: 100%;
       max-width: 550px;
@@ -68,7 +75,7 @@
       border-radius: 12px;
       padding: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     .search-form {
       display: flex;
@@ -116,6 +123,8 @@
     .search-btn:hover {
       background-color: #0052a3;
     }
+
+    /* 搜尋結果卡片 */
     .result-card {
       width: 100%;
       max-width: 550px;
@@ -126,7 +135,7 @@
       text-align: center;
       font-size: 0.95rem;
       min-height: 60px;
-      display: flex;
+      display: none; /* 初始隱藏，搜尋後顯示 */
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -150,7 +159,7 @@
       margin-top: 4px;
     }
 
-    /* 4. 最下方：B1 全區平面圖 */
+    /* B1 全區平面圖 */
     .b1-map-container {
       width: 100%;
       max-width: 550px;
@@ -209,25 +218,30 @@
 </head>
 <body>
 
-  <!-- 1. 最上方：標題與說明 (原黃色框) -->
-  <div class="header">
-    <h1>🛵 B1F 機車臨時停車位導引系統</h1>
-    <p>請選擇左側區域，並輸入右側個位數車號</p>
-  </div>
-
-  <!-- 2. 中間：車位區域圖 (原綠色框，預設顯示 map-r1.png) -->
-  <div class="map-container">
-    <div class="map-wrapper">
-      <img src="map-r1.png" id="mapImg" class="map-image" alt="車位區域圖">
-      <div id="blueDotLeft" class="blue-dot-pin"></div>
-      <div id="blueDotRight" class="blue-dot-pin"></div>
+  <!-- 搜尋後顯示的上方區域 (黃色框 + 綠色框) -->
+  <div id="searchResultView" class="search-result-view">
+    
+    <!-- 1. 最上方：標題與說明 (黃色框) -->
+    <div class="header">
+      <h1>🛵 B1F 機車臨時停車位導引系統</h1>
+      <p>請選擇左側區域，並輸入右側個位數車號</p>
     </div>
+
+    <!-- 2. 中間：單區放大圖 (綠色框，顯示 map-r1.png 等 6 張圖與藍點) -->
+    <div class="map-container">
+      <div class="map-wrapper">
+        <img src="map-r1.png" id="mapImg" class="map-image" alt="車位區域圖">
+        <div id="blueDotLeft" class="blue-dot-pin"></div>
+        <div id="blueDotRight" class="blue-dot-pin"></div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- 3. 搜尋輸入框 (原藍色框) -->
+  <!-- 藍色框：搜尋輸入框 (首頁預設直接顯示) -->
   <div class="search-container">
     <div class="search-form">
-      <select id="zoneSelect" class="zone-select" onchange="onZoneChange()">
+      <select id="zoneSelect" class="zone-select">
         <option value="R1">R1 區</option>
         <option value="R2">R2 區</option>
         <option value="R3">R3 區</option>
@@ -242,12 +256,10 @@
     </div>
   </div>
 
-  <!-- 搜尋結果卡片 -->
-  <div class="result-card" id="resultCard">
-    請選擇區域並輸入車位號碼（R 區為 1~7，G 區為 1~6）
-  </div>
+  <!-- 搜尋結果說明卡片 -->
+  <div class="result-card" id="resultCard"></div>
 
-  <!-- 4. 最下方：地下室停車場全區平面圖 (map-b1.png) -->
+  <!-- 最下方：地下室停車場全區平面圖 (首頁預設直接顯示) -->
   <div class="b1-map-container">
     <div class="b1-map-title">🗺️ B1F 全區平面圖</div>
     <img src="map-b1.png" class="map-image" alt="B1全區平面圖">
@@ -274,7 +286,7 @@
       7: { y: 89.0, leftX: 43.0, rightX: 57.0 }
     };
 
-    /* G 區專屬座標 (預設值，待調整) */
+    /* G 區專屬座標 */
     const posG = {
       1: { y: 72.0, leftX: 42.0, rightX: 58.0 },
       2: { y: 61.5, leftX: 42.0, rightX: 58.0 },
@@ -291,20 +303,6 @@
       }
     }
 
-    function onZoneChange() {
-      const selectedZone = document.getElementById('zoneSelect').value;
-      const spotInput = document.getElementById('spotNumber');
-      const mapImg = document.getElementById('mapImg');
-      
-      spotInput.placeholder = `號碼 (1-${areaInfo[selectedZone].max})`;
-      // 切換區域時同步更新中間區域圖
-      mapImg.src = areaInfo[selectedZone].img;
-      
-      // 清空藍點
-      document.getElementById('blueDotLeft').style.display = 'none';
-      document.getElementById('blueDotRight').style.display = 'none';
-    }
-
     function handleKeyPress(e) {
       if (e.key === 'Enter') searchSpot();
     }
@@ -313,14 +311,13 @@
       const zoneKey = document.getElementById('zoneSelect').value;
       const numInput = document.getElementById('spotNumber').value.trim();
       const resultCard = document.getElementById('resultCard');
+      const searchResultView = document.getElementById('searchResultView');
       const mapImg = document.getElementById('mapImg');
       const dotL = document.getElementById('blueDotLeft');
       const dotR = document.getElementById('blueDotRight');
 
       if (!numInput) {
-        resultCard.innerHTML = '⚠️ 請輸入車位個位數字！';
-        dotL.style.display = 'none';
-        dotR.style.display = 'none';
+        alert('請輸入車位號碼！');
         return;
       }
 
@@ -328,19 +325,20 @@
       const area = areaInfo[zoneKey];
 
       if (isNaN(num) || num < 1 || num > area.max) {
-        resultCard.innerHTML = `
-          <div style="color: #d9381e; font-weight: bold;">❌ 數字超出範圍</div>
-          <div class="spot-guide">${zoneKey} 區號碼範圍為 1 到 ${area.max}！</div>
-        `;
-        dotL.style.display = 'none';
-        dotR.style.display = 'none';
+        alert(`${zoneKey} 區號碼請輸入 1 到 ${area.max} 之間的數字！`);
         return;
       }
 
+      // 1. 展開上方資訊與單區地圖
+      searchResultView.style.display = 'flex';
+      resultCard.style.display = 'flex';
+
+      // 2. 切換對應的單區圖片
       mapImg.src = area.img;
       const numFormatted = num < 10 ? `0${num}` : `${num}`;
       const spotName = `${zoneKey}-${numFormatted}`;
 
+      // 3. 計算與定位藍點
       const posData = zoneKey.startsWith('R') ? posR[num] : posG[num];
 
       dotL.style.top = posData.y + '%';
@@ -351,11 +349,15 @@
       dotR.style.left = posData.rightX + '%';
       dotR.style.display = 'block';
 
+      // 4. 更新下方文字卡片
       resultCard.innerHTML = `
         <div class="spot-title">🎯 車號：${spotName}</div>
         <div class="spot-area">區域：${area.name}</div>
         <div class="spot-guide">${area.guide}</div>
       `;
+
+      // 5. 平滑滾動至最頂端（提升手機端體驗）
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
 </body>
