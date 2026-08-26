@@ -24,7 +24,7 @@
       text-align: center;
       margin-bottom: 16px;
       width: 100%;
-      max-width: 500px;
+      max-width: 550px;
     }
     .header h1 {
       font-size: 1.35rem;
@@ -35,9 +35,33 @@
       font-size: 0.85rem;
       color: #666;
     }
+    
+    /* 1. 地圖容器：寬度加大至 550px，且置頂（對調位置） */
+    .map-container {
+      width: 100%;
+      max-width: 550px;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .map-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+    }
+
+    /* 2. 搜尋與結果卡片：寬度同步 550px，移至下方 */
     .search-container {
       width: 100%;
-      max-width: 500px;
+      max-width: 550px;
       background: #ffffff;
       border-radius: 12px;
       padding: 16px;
@@ -92,12 +116,11 @@
     }
     .result-card {
       width: 100%;
-      max-width: 500px;
+      max-width: 550px;
       background: #ffffff;
       border-radius: 12px;
       padding: 14px 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      margin-bottom: 16px;
       text-align: center;
       font-size: 0.95rem;
       min-height: 60px;
@@ -123,25 +146,8 @@
       color: #666;
       margin-top: 4px;
     }
-    .map-container {
-      width: 100%;
-      max-width: 360px;
-      background: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 12px;
-    }
-    .map-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    .map-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 6px;
-    }
+
+    /* 雙紅點標記 */
     .red-dot-pin {
       position: absolute;
       width: 22px;
@@ -184,12 +190,21 @@
 
   <div class="header">
     <h1>🛵 B1F 機車臨時停車位導引系統</h1>
-    <p>請選擇左側區域，並輸入右側車號數字</p>
+    <p>請選擇左側區域，並輸入右側個位數車號</p>
   </div>
 
+  <!-- 【藍框區域】原地圖區域，移至上方 -->
+  <div class="map-container">
+    <div class="map-wrapper">
+      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區圖">
+      <div id="redDotLeft" class="red-dot-pin"></div>
+      <div id="redDotRight" class="red-dot-pin"></div>
+    </div>
+  </div>
+
+  <!-- 【紅框區域】原搜尋與結果卡片，移至下方 -->
   <div class="search-container">
     <div class="search-form">
-      <!-- 左側下拉式 -->
       <select id="zoneSelect" class="zone-select" onchange="onZoneChange()">
         <option value="R1">R1 區</option>
         <option value="R2">R2 區</option>
@@ -199,8 +214,8 @@
         <option value="G2">G2 區</option>
       </select>
 
-      <!-- 右側數字輸入 -->
-      <input type="number" id="spotNumber" class="search-input" min="1" max="7" placeholder="號碼 (1-7)" onkeypress="handleKeyPress(event)">
+      <!-- 限制只能輸入個位數 1 位數 (maxlength="1") -->
+      <input type="text" id="spotNumber" class="search-input" maxlength="1" inputmode="numeric" placeholder="號碼 (1-7)" oninput="validateSingleDigit(this)" onkeypress="handleKeyPress(event)">
       
       <button onclick="searchSpot()" class="search-btn">搜尋位置</button>
     </div>
@@ -208,15 +223,6 @@
 
   <div class="result-card" id="resultCard">
     請選擇區域並輸入車位號碼（R 區為 1~7，G 區為 1~6）
-  </div>
-
-  <div class="map-container">
-    <div class="map-wrapper">
-      <!-- 預設首頁圖片：map-b1.png -->
-      <img src="map-b1.png" id="mapImg" class="map-image" alt="B1全區圖">
-      <div id="redDotLeft" class="red-dot-pin"></div>
-      <div id="redDotRight" class="red-dot-pin"></div>
-    </div>
   </div>
 
   <script>
@@ -248,11 +254,17 @@
       6: { y: 15.0, leftX: 16.0, rightX: 84.0 }
     };
 
+    /* 強制僅能輸入單一個數字 */
+    function validateSingleDigit(input) {
+      input.value = input.value.replace(/[^0-9]/g, '');
+      if (input.value.length > 1) {
+        input.value = input.value.slice(0, 1);
+      }
+    }
+
     function onZoneChange() {
       const selectedZone = document.getElementById('zoneSelect').value;
       const spotInput = document.getElementById('spotNumber');
-      
-      spotInput.max = areaInfo[selectedZone].max;
       spotInput.placeholder = `號碼 (1-${areaInfo[selectedZone].max})`;
     }
 
@@ -269,7 +281,7 @@
       const dotR = document.getElementById('redDotRight');
 
       if (!numInput) {
-        resultCard.innerHTML = '⚠️ 請在右側輸入車位號碼數字！';
+        resultCard.innerHTML = '⚠️ 請輸入車位個位數字！';
         dotL.style.display = 'none';
         dotR.style.display = 'none';
         return;
