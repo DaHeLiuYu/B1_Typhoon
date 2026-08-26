@@ -21,20 +21,12 @@
       padding: 16px;
     }
 
-    /* 預設隱藏搜尋後的區塊 */
-    .search-result-view {
-      display: none;
-      width: 100%;
-      max-width: 550px;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* 黃色框：標題與說明 */
+    /* 1. 最上方：標題與說明 (常駐首頁) */
     .header {
       text-align: center;
       margin-bottom: 16px;
       width: 100%;
+      max-width: 550px;
     }
     .header h1 {
       font-size: 1.35rem;
@@ -45,10 +37,47 @@
       font-size: 0.85rem;
       color: #666;
     }
-    
-    /* 綠色框：單區車位放大圖 (顯示 png 與藍點) */
-    .map-container {
+
+    /* 2. 搜尋結果說明卡片 (搜尋後顯示在放大圖上方) */
+    .result-card {
       width: 100%;
+      max-width: 550px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      font-size: 0.95rem;
+      min-height: 60px;
+      display: none; /* 初始隱藏，搜尋後顯示 */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-left: 5px solid #0066cc;
+      margin-bottom: 16px;
+    }
+    .result-card .spot-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #d9381e;
+      margin-bottom: 4px;
+    }
+    .result-card .spot-area {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: #1a2a3a;
+    }
+    .result-card .spot-guide {
+      font-size: 0.88rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* 3. 單區車位放大圖 (預設隱藏，搜尋後顯示) */
+    .map-container {
+      display: none;
+      width: 100%;
+      max-width: 550px;
       background: #ffffff;
       border-radius: 12px;
       overflow: hidden;
@@ -67,7 +96,7 @@
       border-radius: 6px;
     }
 
-    /* 藍色框：搜尋區塊 */
+    /* 4. 藍色框：搜尋區塊 */
     .search-container {
       width: 100%;
       max-width: 550px;
@@ -124,42 +153,7 @@
       background-color: #0052a3;
     }
 
-    /* 搜尋結果卡片 */
-    .result-card {
-      width: 100%;
-      max-width: 550px;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      text-align: center;
-      font-size: 0.95rem;
-      min-height: 60px;
-      display: none; /* 初始隱藏，搜尋後顯示 */
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border-left: 5px solid #0066cc;
-      margin-bottom: 16px;
-    }
-    .result-card .spot-title {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: #d9381e;
-      margin-bottom: 4px;
-    }
-    .result-card .spot-area {
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: #1a2a3a;
-    }
-    .result-card .spot-guide {
-      font-size: 0.88rem;
-      color: #666;
-      margin-top: 4px;
-    }
-
-    /* B1 全區平面圖 */
+    /* 5. B1 全區平面圖 */
     .b1-map-container {
       width: 100%;
       max-width: 550px;
@@ -218,27 +212,25 @@
 </head>
 <body>
 
-  <!-- 搜尋後顯示的上方區域 (黃色框 + 綠色框) -->
-  <div id="searchResultView" class="search-result-view">
-    
-    <!-- 1. 最上方：標題與說明 (黃色框) -->
-    <div class="header">
-      <h1>🛵 B1F 機車臨時停車位導引系統</h1>
-      <p>請選擇左側區域，並輸入右側個位數車號</p>
-    </div>
-
-    <!-- 2. 中間：單區放大圖 (綠色框，顯示 map-r1.png 等 6 張圖與藍點) -->
-    <div class="map-container">
-      <div class="map-wrapper">
-        <img src="map-r1.png" id="mapImg" class="map-image" alt="車位區域圖">
-        <div id="blueDotLeft" class="blue-dot-pin"></div>
-        <div id="blueDotRight" class="blue-dot-pin"></div>
-      </div>
-    </div>
-
+  <!-- 1. 最上方：標題與說明 (常駐首頁) -->
+  <div class="header">
+    <h1>🛵 B1F 機車臨時停車位導引系統</h1>
+    <p>請選擇左側區域，並輸入右側個位數車號</p>
   </div>
 
-  <!-- 藍色框：搜尋輸入框 (首頁預設直接顯示) -->
+  <!-- 2. 搜尋結果卡片 (搜尋後會出現在單區放大圖上方) -->
+  <div class="result-card" id="resultCard"></div>
+
+  <!-- 3. 單區放大圖 (搜尋後顯示，含 map-r1.png 等 6 張圖與藍點) -->
+  <div class="map-container" id="mapContainer">
+    <div class="map-wrapper">
+      <img src="map-r1.png" id="mapImg" class="map-image" alt="車位區域圖">
+      <div id="blueDotLeft" class="blue-dot-pin"></div>
+      <div id="blueDotRight" class="blue-dot-pin"></div>
+    </div>
+  </div>
+
+  <!-- 4. 藍色框：搜尋輸入框 (首頁預設顯示) -->
   <div class="search-container">
     <div class="search-form">
       <select id="zoneSelect" class="zone-select">
@@ -256,10 +248,7 @@
     </div>
   </div>
 
-  <!-- 搜尋結果說明卡片 -->
-  <div class="result-card" id="resultCard"></div>
-
-  <!-- 最下方：地下室停車場全區平面圖 (首頁預設直接顯示) -->
+  <!-- 5. 最下方：地下室停車場全區平面圖 (首頁預設顯示) -->
   <div class="b1-map-container">
     <div class="b1-map-title">🗺️ B1F 全區平面圖</div>
     <img src="map-b1.png" class="map-image" alt="B1全區平面圖">
@@ -311,7 +300,7 @@
       const zoneKey = document.getElementById('zoneSelect').value;
       const numInput = document.getElementById('spotNumber').value.trim();
       const resultCard = document.getElementById('resultCard');
-      const searchResultView = document.getElementById('searchResultView');
+      const mapContainer = document.getElementById('mapContainer');
       const mapImg = document.getElementById('mapImg');
       const dotL = document.getElementById('blueDotLeft');
       const dotR = document.getElementById('blueDotRight');
@@ -329,9 +318,9 @@
         return;
       }
 
-      // 1. 展開上方資訊與單區地圖
-      searchResultView.style.display = 'flex';
+      // 1. 展開卡片與單區地圖
       resultCard.style.display = 'flex';
+      mapContainer.style.display = 'block';
 
       // 2. 切換對應的單區圖片
       mapImg.src = area.img;
@@ -349,14 +338,14 @@
       dotR.style.left = posData.rightX + '%';
       dotR.style.display = 'block';
 
-      // 4. 更新下方文字卡片
+      // 4. 更新車號資訊卡片內容
       resultCard.innerHTML = `
         <div class="spot-title">🎯 車號：${spotName}</div>
         <div class="spot-area">區域：${area.name}</div>
         <div class="spot-guide">${area.guide}</div>
       `;
 
-      // 5. 平滑滾動至最頂端
+      // 5. 自動平滑滾動至頂端
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
